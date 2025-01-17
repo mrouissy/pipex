@@ -67,6 +67,3 @@ When we use `fork()` along with `pipe()` for interprocess communication, it's li
 - The input data originates from the designated input file. It then travels through the first process (`cmd1`), which acts upon it according to its instructions.
 - The processed data is then sent to the write end (`pd[1]`) of the pipe, where it awaits consumption by the second process (Child Process 2). This data can be read by Child Process 2 through its standard input (stdin).
 
-This explanation unveils the intricate workings of pipelines and interprocess communication in C, inviting exploration and innovation in the realm of programming.
-=======
->>>>>>> 8e2fa3ea3cfb1866b2cbc7ac25144f825da9f780
