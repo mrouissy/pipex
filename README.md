@@ -5,7 +5,6 @@ This program takes the infile, outfile to redirect the STDIN (<), STDOUT (>) and
 ```
 ./pipex <infile> <cmd1> <cmd2> <outfile>
 ```
-<<<<<<< HEAD
 
 ## Pipelines in Unix-like Systems
 Pipelines serve as a cornerstone in Unix-like operating systems, enabling seamless communication between processes by allowing the output of one process to become the input of another. In Unix-like shells such as Bash, pipelines facilitate the concatenation of multiple commands, where the output of one command seamlessly flows into the input of the next. This orchestration is achieved effortlessly using the pipe operator `|`. For instance:
