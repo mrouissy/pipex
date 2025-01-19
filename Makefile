@@ -6,7 +6,8 @@ FLAG = -Werror -Wall -Wextra -fsanitize=address
 
 RM = rm -f
 
-SRC = src/pipex.c
+SRC = src/pipex.c\
+		src/pipex_utils.c\
 
 LIBFT = libft/libft.a
 

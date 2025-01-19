@@ -1,10 +1,9 @@
 
 #ifndef LIBFT_H
-#define LIBFT_H
+# define LIBFT_H
 
-#include <unistd.h>
-#include <stdlib.h>
-
+# include <unistd.h>
+# include <stdlib.h>
 
 int		ft_strlen(const char	*str);
 void	ft_putstr_fd(const char *msg, int fd);
