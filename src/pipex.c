@@ -1,112 +1,97 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipex.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mrouissy <mrouissy@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/19 00:54:51 by mrouissy          #+#    #+#             */
+/*   Updated: 2025/01/19 05:59:38 by mrouissy         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "pipex.h"
 
-// execute cmd
-static void	ft_exec(char **cmd, char *execpath, char **env)
+void	ft_child(char **env, char **av, int *fds)
 {
-	if (execve(execpath, cmd, env) == -1)
-		printf("command not found: \"%s\"\n", cmd[0]);
-}
-// aray fiha path o cmd
-#include "pipex.h"
+	char	**cmd;
+	int		fd;
+	char	*path;
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-// Assume get_paths, ft_split, get_path, open_file, ft_exec are defined elsewhere
-
-static void ft_parent(char **env, char **av, int *fds)
-{
-	int	fd;
-	char **cmd2;
-	char *execpath;
-	char **paths;
-
-	paths = get_paths(env);
-	cmd2 = ft_split(av[4], ' ');
-	execpath = get_path(paths, cmd2[0]);
-	fd = open_file(av[4], 1);
-    if (fd == -1)
-    {
-        perror("Error opening output file");
-        exit(EXIT_FAILURE);
-    }
-    if (dup2(fd, STDOUT_FILENO) == -1)
-    {
-        perror("dup2");
-        exit(EXIT_FAILURE);
-    }
-    if (dup2(fds[0], STDIN_FILENO) == -1)
-    {
-        perror("dup2");
-        exit(EXIT_FAILURE);
-    }
-    close(fds[1]);
-    ft_exec(cmd2, execpath, env);
+	cmd = ft_split(av[2], ' ');
+	fd = ft_open_file(av[1], 0);
+	if (fd == -1)
+	{
+		perror("Error opening input file");
+		exit(EXIT_FAILURE);
+	}
+	path = ft_get_path(env, av, 2);
+	if (dup2(fd, 0) == -1)
+	{
+		perror("Error duplicating file descriptor");
+		exit(EXIT_FAILURE);
+	}
+	if (dup2(fds[1], 1) == -1)
+	{
+		perror("Error duplicating file descriptor");
+		exit(EXIT_FAILURE);
+	}
+	close(fd);
+	ft_exec(path, cmd, env);
 }
 
-static void ft_child(char **env, char **av, int *fds)
+void	ft_parent(char **env, char **av, int *fds)
 {
-    int fd;
-    char **cmd1;
-    char *execpath;
-    char **paths;
+	int		fd;
+	char	*path;
+	char	**cmd;
 
-    paths = get_paths(env);
-    cmd1 = ft_split(av[2], ' ');
-    execpath = get_path(paths, cmd1[0]);
-    fd = open_file(av[1], 0);
-    if (fd == -1)
-    {
-        perror("Error opening input file");
-        exit(EXIT_FAILURE);
-    }
-    if (dup2(fd, STDIN_FILENO) == -1)
-    {
-        perror("dup2");
-        exit(EXIT_FAILURE);
-    }
-    if (dup2(fds[1], STDOUT_FILENO) == -1)
-    {
-        perror("dup2");
-        exit(EXIT_FAILURE);
-    }
-    close(fds[0]);
-    ft_exec(cmd1, execpath, env);
+	cmd = ft_split(av[3], ' ');
+	path = ft_get_path(env, av, 3);
+	fd = ft_open_file(av[4], 1);
+	if (fd == -1)
+	{
+		perror("Error opening input file");
+		exit(EXIT_FAILURE);
+	}
+	path = ft_get_path(env, av, 3);
+	if (dup2(fd, 1) == -1)
+	{
+		perror("Error duplicating file descriptor");
+		exit(EXIT_FAILURE);
+	}
+	if (dup2(fds[0], 0) == -1)
+	{
+		perror("Error duplicating file descriptor");
+		exit(EXIT_FAILURE);
+	}
+	close(fds[1]);
+	ft_exec(path, cmd, env);
 }
 
-int main(int ac, char *av[], char **env)
+int	main(int ac, char **av, char **env)
 {
-    int p_fd[2];
-    pid_t id;
+	int		fds[2];
+	pid_t	id;
 
-    if (ac != 5)
-    {
-        fprintf(stderr, "Usage: ./pipex file1 cmd1 cmd2 file2\n");
-        exit(EXIT_FAILURE);
-    }
-    if (pipe(p_fd) == -1)
-    {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    }
-    id = fork();
-    if (id == -1)
-    {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
-    if (id == 0)
-        ft_child(env, av, p_fd);
-    else
-    {
-        ft_parent(env, av, p_fd);
-        close(p_fd[0]);
-        close(p_fd[1]);
-        waitpid(id, NULL, 0);
-    }
-    return 0;
+	if (ac != 5)
+	{
+		ft_putstr_fd("./pipex <infile> <cmd1> <cmd2> <outfile> ", 2);
+		exit(EXIT_FAILURE);
+	}
+	if (pipe(fds) == -1)
+	{
+		ft_putstr_fd("Error creating pipe", 2);
+		exit(EXIT_FAILURE);
+	}
+	id = fork();
+	if (id == -1)
+	{
+		perror("Error forking process");
+		exit(EXIT_FAILURE);
+	}
+	if (!id)
+		ft_child(env, av, fds);
+	wait(NULL);
+	ft_parent(env, av, fds);
 }
